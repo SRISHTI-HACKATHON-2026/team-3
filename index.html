@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="description" content="NyayaVoice — A secure, anonymous grievance platform for vulnerable communities. Submit, track, and verify resolution safely.">
+    <title>NyayaVoice — Safe Grievance Redressal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-grid"></div>
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <!-- Splash / Onboarding Screen -->
+    <div id="splash-screen" class="splash-screen">
+        <div class="splash-content">
+            <div class="splash-logo">
+                <div class="logo-ring">
+                    <i class="ri-scales-3-line"></i>
+                </div>
+                <h1>NyayaVoice</h1>
+                <p>Your voice. Your rights. Protected.</p>
+            </div>
+            <div class="splash-features">
+                <div class="feature-pill"><i class="ri-shield-check-fill"></i> Anonymous</div>
+                <div class="feature-pill"><i class="ri-links-fill"></i> Tamper-Proof</div>
+                <div class="feature-pill"><i class="ri-mic-2-fill"></i> Voice-First</div>
+            </div>
+            <button id="start-btn" class="btn-glow">
+                <i class="ri-arrow-right-circle-fill"></i> Start Safely
+            </button>
+            <p class="splash-lang-hint">Choose your language / अपनी भाषा चुनें / ನಿಮ್ಮ ಭಾಷೆ ಆರಿಸಿ</p>
+        </div>
+    </div>
+
+    <!-- Top Header -->
+    <header class="top-header glass-dark" id="main-header" style="display:none;">
+        <div class="logo-small">
+            <i class="ri-scales-3-line"></i>
+            <span>NyayaVoice</span>
+        </div>
+        <div class="header-right">
+            <button id="lang-cycle-btn" class="lang-cycle-btn" title="Change Language">
+                <span id="lang-label">EN</span>
+            </button>
+            <button id="notification-bell-btn" class="icon-btn-dark relative" id="notif-btn">
+                <i class="ri-notification-3-line"></i>
+                <span id="notification-badge" class="badge-dot hidden"></span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Notification Drawer -->
+    <div id="notifications-drawer" class="drawer hidden">
+        <div class="drawer-handle"></div>
+        <div class="drawer-header">
+            <h3><i class="ri-notification-3-line"></i> Notifications</h3>
+            <button id="close-notif-btn" class="close-x"><i class="ri-close-line"></i></button>
+        </div>
+        <div id="notifications-list" class="notifications-list"></div>
+    </div>
+    <div id="drawer-overlay" class="drawer-overlay hidden"></div>
+
+    <!-- Main App -->
+    <main id="app-main" style="display:none;">
+        <div id="toast-container"></div>
+
+        <!-- VIEW: HOME / COMMUNITY DASHBOARD -->
+        <section id="view-home" class="view active">
+            <div class="view-top-bar">
+                <div>
+                    <h2 data-i18n="community_dash">Community Dashboard</h2>
+                    <p class="sub-label" data-i18n="community_desc">Verified grievances from your community</p>
+                </div>
+                <div id="trust-meter-mini" class="trust-meter-mini">
+                    <span id="mini-trust-score">--</span>
+                    <small>Issues</small>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="stats-bar">
+                <div class="stat-chip" id="stat-total"><span class="stat-num" id="stat-total-num">0</span><span class="stat-lbl">Total</span></div>
+                <div class="stat-chip urgent" id="stat-pending"><span class="stat-num" id="stat-pending-num">0</span><span class="stat-lbl">Pending</span></div>
+                <div class="stat-chip progress" id="stat-progress"><span class="stat-num" id="stat-progress-num">0</span><span class="stat-lbl">In Progress</span></div>
+                <div class="stat-chip resolved" id="stat-resolved"><span class="stat-num" id="stat-resolved-num">0</span><span class="stat-lbl">Resolved</span></div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filter-row">
+                <button class="filter-chip active" data-filter="all">🌐 All</button>
+                <button class="filter-chip" data-filter="urgent">🔥 Urgent</button>
+                <button class="filter-chip" data-filter="resolved">✅ Resolved</button>
+                <button class="filter-chip" data-filter="following">🔖 Following</button>
+                <button class="filter-chip" data-filter="verified">🛡️ Verified</button>
+            </div>
+
+            <!-- Geo Map Placeholder -->
+            <div id="geo-map-section" class="geo-map-card glass-dark hidden">
+                <div class="geo-header">
+                    <i class="ri-map-pin-2-fill"></i>
+                    <span>Grievance Heatmap</span>
+                    <button id="close-map" class="close-x"><i class="ri-close-line"></i></button>
+                </div>
+                <div id="geo-map" class="geo-map"></div>
+            </div>
+            <button id="toggle-map-btn" class="map-toggle-btn">
+                <i class="ri-map-2-line"></i> View Map
+            </button>
+
+            <div id="home-complaints-list" class="complaints-list"></div>
+        </section>
+
+        <!-- VIEW: SUBMIT COMPLAINT -->
+        <section id="view-submit" class="view">
+            <div class="view-top-bar">
+                <div>
+                    <h2 data-i18n="report_title">Report a Grievance</h2>
+                    <p class="sub-label" data-i18n="report_desc">Safe. Anonymous. Verified.</p>
+                </div>
+            </div>
+
+            <!-- Submit Form Card -->
+            <div id="submit-form-wrapper" class="glass-card">
+                <form id="submit-form">
+                    <!-- Category Grid -->
+                    <div class="form-section">
+                        <label class="form-label" data-i18n="label_category">Select Category</label>
+                        <div class="category-grid" id="category-grid">
+                            <button type="button" class="cat-tile active" data-cat="Water">💧<span>Water</span></button>
+                            <button type="button" class="cat-tile" data-cat="Electricity">⚡<span>Power</span></button>
+                            <button type="button" class="cat-tile" data-cat="Safety">🚨<span>Safety</span></button>
+                            <button type="button" class="cat-tile" data-cat="Sanitation">🗑️<span>Sanitation</span></button>
+                            <button type="button" class="cat-tile" data-cat="Roads">🛣️<span>Roads</span></button>
+                            <button type="button" class="cat-tile" data-cat="Corruption">⚖️<span>Corruption</span></button>
+                            <button type="button" class="cat-tile" data-cat="Education">📚<span>Education</span></button>
+                            <button type="button" class="cat-tile" data-cat="Other">📌<span>Other</span></button>
+                        </div>
+                    </div>
+
+                    <!-- Voice / Text Input -->
+                    <div class="form-section">
+                        <div class="input-label-row">
+                            <label class="form-label" for="complaint-text" data-i18n="label_issue">Describe the Issue</label>
+                            <div class="voice-controls">
+                                <button type="button" id="voice-btn" class="voice-btn" title="Tap to speak">
+                                    <i class="ri-mic-line"></i>
+                                    <span id="voice-btn-label">Speak</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Voice Visualizer -->
+                        <div id="voice-visualizer" class="voice-visualizer hidden">
+                            <div class="wave-bars">
+                                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                <div class="bar"></div><div class="bar"></div><div class="bar"></div>
+                                <div class="bar"></div>
+                            </div>
+                            <span id="voice-status-text">Listening... speak now</span>
+                        </div>
+
+                        <div class="textarea-wrapper">
+                            <textarea id="complaint-text"
+                                data-i18n-placeholder="placeholder_issue"
+                                placeholder="Describe the grievance in detail..."
+                                required rows="5"></textarea>
+                            <div id="ai-processing" class="ai-processing hidden">
+                                <div class="ai-spinner"></div>
+                                <span>AI is summarizing your complaint...</span>
+                            </div>
+                        </div>
+
+                        <!-- AI Summary Preview -->
+                        <div id="ai-summary-preview" class="ai-summary-preview hidden">
+                            <div class="ai-label"><i class="ri-robot-2-line"></i> AI Summary</div>
+                            <p id="ai-summary-text"></p>
+                        </div>
+                    </div>
+
+                    <!-- Duplicate Warning -->
+                    <div id="duplicate-warning" class="dup-warning hidden">
+                        <i class="ri-alert-line"></i>
+                        <div>
+                            <strong>Similar issue found!</strong>
+                            <p>Complaint <span id="dup-id-link" class="dup-link"></span> already exists. Consider upvoting instead.</p>
+                        </div>
+                    </div>
+
+                    <!-- Proof Upload -->
+                    <div class="form-section">
+                        <label class="form-label" data-i18n="label_proof">Add Evidence (Optional)</label>
+                        <div class="upload-zone" id="upload-zone">
+                            <input type="file" id="complaint-image" accept="image/*" class="file-input-hidden">
+                            <div class="upload-ui" id="upload-ui-content">
+                                <i class="ri-camera-2-line"></i>
+                                <span>Tap to upload photo evidence</span>
+                            </div>
+                            <img id="proof-preview" class="proof-preview hidden" alt="Proof">
+                        </div>
+                    </div>
+
+                    <!-- Location Tag -->
+                    <div class="form-section">
+                        <div class="location-row">
+                            <div class="location-info" id="location-info">
+                                <i class="ri-map-pin-line"></i>
+                                <span id="location-text">Location not tagged</span>
+                            </div>
+                            <button type="button" id="get-location-btn" class="btn-outline-sm">
+                                <i class="ri-focus-3-line"></i> Tag Location
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Reporter Type -->
+                    <div class="form-section">
+                        <label class="form-label">Reporting as</label>
+                        <div class="reporter-type-row">
+                            <label class="reporter-option selected" for="report-self">
+                                <input type="radio" id="report-self" name="reporter-type" value="self" checked>
+                                <i class="ri-user-3-line"></i>
+                                <span>Self</span>
+                            </label>
+                            <label class="reporter-option" for="report-proxy">
+                                <input type="radio" id="report-proxy" name="reporter-type" value="proxy">
+                                <i class="ri-group-line"></i>
+                                <span>On Behalf</span>
+                            </label>
+                            <label class="reporter-option" for="report-anon">
+                                <input type="radio" id="report-anon" name="reporter-type" value="anonymous">
+                                <i class="ri-ghost-line"></i>
+                                <span>Anonymous</span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Privacy Shield -->
+                    <div class="privacy-shield">
+                        <div class="shield-row">
+                            <i class="ri-shield-check-fill"></i>
+                            <div>
+                                <strong>Your identity is protected</strong>
+                                <p>No personal data is stored or shared without your consent.</p>
+                            </div>
+                        </div>
+                        <div class="encryption-badge"><i class="ri-lock-2-fill"></i> E2E Encrypted</div>
+                    </div>
+
+                    <button type="submit" class="btn-submit" id="submit-btn">
+                        <i class="ri-secure-payment-line"></i>
+                        <span data-i18n="btn_submit">Submit Securely</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Success Screen -->
+            <div id="submit-success" class="success-card hidden">
+                <div class="success-icon-wrap">
+                    <div class="success-circle">
+                        <i class="ri-check-line"></i>
+                    </div>
+                    <div class="success-ripple"></div>
+                </div>
+                <h3>Complaint Registered!</h3>
+                <p>Your grievance has been securely logged and assigned a tamper-proof ID.</p>
+
+                <div class="tracking-id-display">
+                    <div class="tracking-id-label">Your Tracking ID</div>
+                    <div class="tracking-id-value">
+                        <span id="new-tracking-id">---</span>
+                        <button id="copy-id-btn" class="copy-btn" title="Copy ID">
+                            <i class="ri-file-copy-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="hash-display">
+                    <i class="ri-links-fill"></i>
+                    <span>Hash: </span><span id="new-hash-id" class="hash-value">---</span>
+                </div>
+
+                <div class="success-actions">
+                    <button onclick="app.showView('view-track'); document.getElementById('track-id-input').value = document.getElementById('new-tracking-id').innerText; setTimeout(()=>document.getElementById('track-search-btn').click(), 100);" class="btn-primary-sm">
+                        <i class="ri-radar-line"></i> Track Status
+                    </button>
+                    <button onclick="app.showView('view-home')" class="btn-outline-sm">
+                        <i class="ri-home-line"></i> Dashboard
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: TRACK STATUS -->
+        <section id="view-track" class="view">
+            <div class="view-top-bar">
+                <div>
+                    <h2 data-i18n="track_title">Track Status</h2>
+                    <p class="sub-label" data-i18n="track_desc">Enter your ID or scan QR code</p>
+                </div>
+            </div>
+
+            <div class="search-card glass-card">
+                <div class="search-row">
+                    <input type="text" id="track-id-input" placeholder="e.g. NYV-1234" autocomplete="off">
+                    <button id="track-search-btn" class="btn-search">
+                        <i class="ri-search-2-line"></i>
+                    </button>
+                </div>
+                <button id="voice-search-btn" class="voice-search-btn">
+                    <i class="ri-mic-line"></i> Search by Voice
+                </button>
+            </div>
+
+            <div id="track-result" class="track-result hidden"></div>
+        </section>
+
+        <!-- VIEW: ADMIN PANEL -->
+        <section id="view-admin" class="view">
+            <!-- Login Screen -->
+            <div id="admin-login-screen" class="glass-card admin-login-card">
+                <div class="admin-login-icon">
+                    <i class="ri-admin-fill"></i>
+                </div>
+                <h3>Admin Portal</h3>
+                <p class="sub-label">Secure access for grievance officers</p>
+                <form id="admin-login-form">
+                    <div class="form-group">
+                        <input type="text" id="admin-id" placeholder="Admin ID (demo: admin)" required>
+                    </div>
+                    <div class="form-group">
+                        <input type="password" id="admin-pass" placeholder="Password (demo: admin123)" required>
+                    </div>
+                    <button type="submit" class="btn-submit" data-i18n="btn_login">Login Securely</button>
+                </form>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="admin-dashboard-screen" class="hidden">
+                <div class="view-top-bar">
+                    <div>
+                        <h2>Admin Panel</h2>
+                        <p class="sub-label">Manage and resolve grievances</p>
+                    </div>
+                    <div class="admin-header-actions">
+                        <span class="admin-badge-tag"><i class="ri-admin-fill"></i> Admin</span>
+                        <button id="admin-logout-btn" class="icon-btn-dark" title="Logout">
+                            <i class="ri-logout-box-r-line"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Admin Stats -->
+                <div class="stats-bar" id="admin-stats-bar"></div>
+
+                <!-- Admin Filters -->
+                <div class="filter-row">
+                    <button class="filter-chip active" data-admin-filter="all">All</button>
+                    <button class="filter-chip" data-admin-filter="Pending">⏳ Pending</button>
+                    <button class="filter-chip" data-admin-filter="In Progress">🔄 In Progress</button>
+                    <button class="filter-chip" data-admin-filter="Resolved">✅ Resolved</button>
+                    <button class="filter-chip" data-admin-filter="escalated">🚨 Escalated</button>
+                </div>
+
+                <div id="admin-complaints-list" class="complaints-list admin-list"></div>
+            </div>
+
+            <!-- Admin Status Update Modal -->
+            <div id="admin-modal" class="modal-overlay hidden">
+                <div class="modal-sheet">
+                    <div class="modal-drag-handle"></div>
+                    <h3><i class="ri-edit-2-line"></i> Update Complaint</h3>
+                    <form id="admin-update-form">
+                        <input type="hidden" id="admin-complaint-id">
+                        <div class="form-group">
+                            <label class="form-label">New Status</label>
+                            <div class="status-radio-group">
+                                <label class="status-radio-option pending">
+                                    <input type="radio" name="status" value="Pending"> ⏳ Pending
+                                </label>
+                                <label class="status-radio-option in-progress">
+                                    <input type="radio" name="status" value="In Progress"> 🔄 In Progress
+                                </label>
+                                <label class="status-radio-option verified">
+                                    <input type="radio" name="status" value="Verified"> ✅ Verified
+                                </label>
+                                <label class="status-radio-option resolved">
+                                    <input type="radio" name="status" value="Resolved"> 🎉 Resolved
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" id="proof-group">
+                            <label class="form-label">Proof of Action <span class="required">*required for Resolved</span></label>
+                            <textarea id="admin-proof-text" placeholder="Describe the action taken or resolution achieved..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-submit">Update Complaint</button>
+                        <button type="button" id="close-modal-btn" class="btn-cancel">Cancel</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Audit Log Modal -->
+            <div id="audit-modal" class="modal-overlay hidden">
+                <div class="modal-sheet">
+                    <div class="modal-drag-handle"></div>
+                    <h3><i class="ri-history-line"></i> Audit Trail</h3>
+                    <div class="hash-chain-note">
+                        <i class="ri-links-fill"></i>
+                        <span>Cryptographically chained — tamper-proof</span>
+                    </div>
+                    <div id="audit-log-list" class="audit-timeline"></div>
+                    <button id="close-audit-btn" class="btn-cancel" style="margin-top:16px;">Close</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- VIEW: ABOUT / SAFETY INFO -->
+        <section id="view-about" class="view">
+            <div class="view-top-bar">
+                <div>
+                    <h2>Safety & Privacy</h2>
+                    <p class="sub-label">How your data is protected</p>
+                </div>
+            </div>
+
+            <div class="about-grid">
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-shield-check-fill"></i></div>
+                    <h4>Anonymous by Default</h4>
+                    <p>Your complaints are submitted without any personally identifiable information. Only a device-based pseudonymous ID is generated.</p>
+                </div>
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-links-fill"></i></div>
+                    <h4>Tamper-Proof Logging</h4>
+                    <p>Every action is recorded in a cryptographic hash chain. Any modification is immediately detectable, ensuring accountability.</p>
+                </div>
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-alarm-warning-fill"></i></div>
+                    <h4>Auto-Escalation</h4>
+                    <p>Complaints ignored for more than 3 days are automatically escalated and flagged publicly, ensuring no grievance is buried.</p>
+                </div>
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-group-fill"></i></div>
+                    <h4>Community Verification</h4>
+                    <p>Community members validate complaints through upvotes, building a weighted trust score that reflects collective credibility.</p>
+                </div>
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-robot-2-fill"></i></div>
+                    <h4>AI-Assisted Processing</h4>
+                    <p>Voice recordings and text are auto-summarized and categorized using AI, making processing faster for officials.</p>
+                </div>
+                <div class="about-card glass-card">
+                    <div class="about-icon"><i class="ri-eye-off-fill"></i></div>
+                    <h4>Identity Masking</h4>
+                    <p>Public dashboards display only masked identifiers. No real names, phone numbers, or locations are ever exposed.</p>
+                </div>
+            </div>
+
+            <!-- Emergency Escalation -->
+            <div class="emergency-card">
+                <div class="emergency-header">
+                    <i class="ri-alarm-warning-fill"></i>
+                    <h4>Emergency Contact</h4>
+                </div>
+                <p>If you fear immediate retaliation or your safety is at risk, contact:</p>
+                <div class="emergency-contacts">
+                    <a href="tel:100" class="emergency-link"><i class="ri-phone-fill"></i> Police: 100</a>
+                    <a href="tel:1091" class="emergency-link"><i class="ri-phone-fill"></i> Women Helpline: 1091</a>
+                    <a href="tel:14566" class="emergency-link"><i class="ri-phone-fill"></i> NHRC: 14566</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="bottom-nav glass-dark" id="bottom-nav" style="display:none;">
+        <button class="nav-item active" data-target="view-home" id="nav-home">
+            <i class="ri-dashboard-2-line"></i>
+            <span>Dashboard</span>
+        </button>
+        <button class="nav-item" data-target="view-submit" id="nav-submit">
+            <div class="nav-fab">
+                <i class="ri-add-line"></i>
+            </div>
+            <span>Report</span>
+        </button>
+        <button class="nav-item" data-target="view-track" id="nav-track">
+            <i class="ri-radar-line"></i>
+            <span>Track</span>
+        </button>
+        <button class="nav-item" data-target="view-admin" id="nav-admin">
+            <i class="ri-settings-4-line"></i>
+            <span>Admin</span>
+        </button>
+        <button class="nav-item" data-target="view-about" id="nav-about">
+            <i class="ri-shield-user-line"></i>
+            <span>Safety</span>
+        </button>
+    </nav>
+
+    <script src="db.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
